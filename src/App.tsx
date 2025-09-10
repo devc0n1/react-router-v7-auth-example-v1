@@ -4,7 +4,9 @@ import { ProtectedLayout } from './components/ProtectedLayout';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Agents } from './pages/Agents';
+import { VoiceAgentDetail } from './pages/VoiceAgentDetail';
 import { PhoneNumbers } from './pages/PhoneNumbers';
+import { PhoneNumberDetail } from './pages/PhoneNumberDetail';
 
 function App() {
   return (
@@ -29,10 +31,26 @@ function App() {
             }
           />
           <Route
+            path="/agents/:id"
+            element={
+              <ProtectedLayout>
+                <VoiceAgentDetail />
+              </ProtectedLayout>
+            }
+          />
+          <Route
             path="/phone-numbers"
             element={
               <ProtectedLayout>
                 <PhoneNumbers />
+              </ProtectedLayout>
+            }
+          />
+          <Route
+            path="/phone-numbers/:id"
+            element={
+              <ProtectedLayout>
+                <PhoneNumberDetail />
               </ProtectedLayout>
             }
           />

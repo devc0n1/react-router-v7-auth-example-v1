@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAsync, useAsyncCallback } from '../hooks/useApi';
 import { phoneNumbersService } from '../services/phoneNumbersService';
 import type { PhoneNumber, CreatePhoneNumberRequest } from '../types/api';
@@ -465,6 +466,12 @@ export const PhoneNumbers: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
+                        <Link
+                          to={`/phone-numbers/${phoneNumber.id}`}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
+                          Details
+                        </Link>
                         <button
                           onClick={() => handleEditPhoneNumber(phoneNumber)}
                           disabled={isActionLoading}

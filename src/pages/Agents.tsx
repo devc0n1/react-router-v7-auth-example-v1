@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAsync, useAsyncCallback } from '../hooks/useApi';
 import { agentsService } from '../services/agentsService';
 import type { Agent, CreateAgentRequest } from '../types/api';
@@ -755,6 +756,31 @@ export const Agents: React.FC = () => {
                   justifyContent: 'flex-end',
                   flexWrap: 'wrap'
                 }}>
+                  <Link
+                    to={`/agents/${agent.id}`}
+                    style={{
+                      backgroundColor: 'transparent',
+                      color: '#17a2b8',
+                      border: '1px solid #17a2b8',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '4px',
+                      textDecoration: 'none',
+                      fontSize: '0.9rem',
+                      fontWeight: 'bold',
+                      display: 'inline-block',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = '#17a2b8';
+                      e.currentTarget.style.color = 'white';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = '#17a2b8';
+                    }}
+                  >
+                    View Details
+                  </Link>
                   <button
                     onClick={() => handleEditAgent(agent)}
                     disabled={isActionLoading}

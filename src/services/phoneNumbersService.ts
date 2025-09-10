@@ -81,6 +81,79 @@ export const phoneNumbersService = {
     };
   },
 
+  // Get single phone number by ID
+  async getPhoneNumber(id: string): Promise<ApiResponse<PhoneNumber>> {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Mock phone numbers data (same as in getPhoneNumbers)
+    const mockPhoneNumbers: PhoneNumber[] = [
+      {
+        id: '1',
+        number: '+1-555-123-4567',
+        countryCode: 'US',
+        type: 'local',
+        status: 'active',
+        assignedAgents: ['1', '5'],
+        provider: 'Twilio',
+        cost: 1.50,
+        capabilities: ['Voice Calls', 'SMS', 'MMS'],
+        createdAt: '2024-01-15T08:00:00Z',
+        updatedAt: '2 hours ago'
+      },
+      {
+        id: '2',
+        number: '+1-800-555-0123',
+        countryCode: 'US',
+        type: 'toll-free',
+        status: 'active',
+        assignedAgents: ['2'],
+        provider: 'Twilio',
+        cost: 2.00,
+        capabilities: ['Voice Calls', 'SMS'],
+        createdAt: '2024-01-10T10:30:00Z',
+        updatedAt: '1 day ago'
+      },
+      {
+        id: '3',
+        number: '+44-20-7123-4567',
+        countryCode: 'GB',
+        type: 'local',
+        status: 'active',
+        assignedAgents: ['3'],
+        provider: 'Vonage',
+        cost: 1.75,
+        capabilities: ['Voice Calls'],
+        createdAt: '2024-01-08T14:20:00Z',
+        updatedAt: '3 days ago'
+      },
+      {
+        id: '4',
+        number: '+1-555-987-6543',
+        countryCode: 'US',
+        type: 'mobile',
+        status: 'inactive',
+        assignedAgents: [],
+        provider: 'Twilio',
+        cost: 1.25,
+        capabilities: ['Voice Calls', 'SMS', 'MMS'],
+        createdAt: '2024-01-05T09:15:00Z',
+        updatedAt: '5 days ago'
+      }
+    ];
+
+    const phoneNumber = mockPhoneNumbers.find(p => p.id === id);
+    if (!phoneNumber) {
+      throw new Error('Phone number not found');
+    }
+
+    return {
+      success: true,
+      data: phoneNumber,
+      message: 'Phone number retrieved successfully'
+    };
+  },
+
   // Create a new phone number
   async createPhoneNumber(phoneNumberData: CreatePhoneNumberRequest): Promise<ApiResponse<PhoneNumber>> {
     // Simulate API delay
