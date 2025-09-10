@@ -155,8 +155,38 @@ export const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) =>
                 }
               }}
             >
-              <span style={{ fontSize: '1.1rem' }}>🤖</span>
-              AI Agents
+              <span style={{ fontSize: '1.1rem' }}>🎤</span>
+              Voice Agents
+            </Link>
+            <Link 
+              to="/phone-numbers" 
+              style={{ 
+                textDecoration: 'none', 
+                color: location.pathname === '/phone-numbers' ? '#007bff' : '#495057',
+                backgroundColor: location.pathname === '/phone-numbers' ? '#e7f3ff' : 'transparent',
+                padding: '0.75rem 1rem',
+                borderRadius: '0',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                fontSize: '0.95rem',
+                fontWeight: location.pathname === '/phone-numbers' ? '600' : 'normal',
+                borderLeft: location.pathname === '/phone-numbers' ? '3px solid #007bff' : '3px solid transparent'
+              }}
+              onMouseOver={(e) => {
+                if (location.pathname !== '/phone-numbers') {
+                  e.currentTarget.style.backgroundColor = '#f8f9fa';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (location.pathname !== '/phone-numbers') {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
+            >
+              <span style={{ fontSize: '1.1rem' }}>📞</span>
+              Phone Numbers
             </Link>
           </div>
         </nav>
@@ -254,7 +284,8 @@ export const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) =>
                 fontWeight: '700'
               }}>
                 {location.pathname === '/dashboard' ? 'Dashboard' : 
-                 location.pathname === '/agents' ? 'AI Agents' : 'Application'}
+                 location.pathname === '/agents' ? 'Voice Agents' : 
+                 location.pathname === '/phone-numbers' ? 'Phone Numbers' : 'Application'}
               </h1>
               <p style={{ 
                 margin: '0.25rem 0 0 0', 
@@ -262,7 +293,8 @@ export const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) =>
                 fontSize: '0.9rem' 
               }}>
                 {location.pathname === '/dashboard' ? 'Monitor your application metrics and activity' : 
-                 location.pathname === '/agents' ? 'Manage and configure your AI agents' : 'Welcome to the application'}
+                 location.pathname === '/agents' ? 'Manage and configure your voice agents' : 
+                 location.pathname === '/phone-numbers' ? 'Manage phone numbers and assign them to agents' : 'Welcome to the application'}
               </p>
             </div>
           </div>

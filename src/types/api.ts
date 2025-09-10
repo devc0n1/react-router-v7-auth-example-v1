@@ -44,7 +44,7 @@ export interface RefreshTokenRequest {
   refreshToken: string;
 }
 
-// Agent Types
+// Voice Agent Types
 export interface Agent {
   id: string;
   name: string;
@@ -54,10 +54,13 @@ export interface Agent {
   description: string;
   capabilities: string[];
   metrics: {
-    requestsToday: number;
-    averageResponseTime: number;
+    callsToday: number;
+    averageCallDuration: number;
     successRate: number;
   };
+  phoneNumbers: string[];
+  voiceModel: string;
+  language: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -67,6 +70,8 @@ export interface CreateAgentRequest {
   type: string;
   description: string;
   capabilities: string[];
+  voiceModel?: string;
+  language?: string;
 }
 
 export interface UpdateAgentRequest {
@@ -75,14 +80,16 @@ export interface UpdateAgentRequest {
   description?: string;
   capabilities?: string[];
   status?: 'active' | 'inactive' | 'maintenance';
+  voiceModel?: string;
+  language?: string;
 }
 
 // Dashboard Types
 export interface DashboardStats {
   totalAgents: number;
   activeAgents: number;
-  totalRequests: number;
-  averageResponseTime: number;
+  totalCalls: number;
+  averageCallDuration: number;
   systemUptime: string;
   lastUpdated: string;
 }
@@ -93,6 +100,41 @@ export interface RecentActivity {
   message: string;
   timestamp: string;
   icon: string;
+}
+
+// Phone Number Types
+export interface PhoneNumber {
+  id: string;
+  number: string;
+  countryCode: string;
+  type: 'local' | 'toll-free' | 'mobile';
+  status: 'active' | 'inactive' | 'pending';
+  assignedAgents: string[];
+  provider: string;
+  cost: number;
+  capabilities: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePhoneNumberRequest {
+  number: string;
+  countryCode: string;
+  type: 'local' | 'toll-free' | 'mobile';
+  provider: string;
+  cost: number;
+  capabilities: string[];
+}
+
+export interface UpdatePhoneNumberRequest {
+  number?: string;
+  countryCode?: string;
+  type?: 'local' | 'toll-free' | 'mobile';
+  status?: 'active' | 'inactive' | 'pending';
+  assignedAgents?: string[];
+  provider?: string;
+  cost?: number;
+  capabilities?: string[];
 }
 
 // API Error Types

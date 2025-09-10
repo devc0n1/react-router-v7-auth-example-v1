@@ -9,80 +9,95 @@ const MOCK_DELAY = 800;
 let MOCK_AGENTS: Agent[] = [
   {
     id: '1',
-    name: 'GPT Assistant',
+    name: 'Customer Support Agent',
     status: 'active',
-    type: 'Language Model',
+    type: 'Customer Support',
     lastUpdated: '2 hours ago',
-    description: 'General purpose AI assistant for text generation and analysis',
-    capabilities: ['Text Generation', 'Q&A', 'Summarization', 'Translation'],
+    description: 'Handles customer inquiries, support tickets, and troubleshooting via voice calls',
+    capabilities: ['Customer Support', 'Issue Resolution', 'Product Knowledge', 'Escalation Management'],
+    phoneNumbers: ['+1-555-123-4567', '+1-800-555-0123'],
+    voiceModel: 'Female Professional',
+    language: 'English (US)',
     metrics: {
-      requestsToday: 1250,
-      averageResponseTime: 340,
-      successRate: 98.5,
+      callsToday: 125,
+      averageCallDuration: 4.2,
+      successRate: 94.8,
     },
     createdAt: '2024-01-01T10:00:00Z',
     updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: '2',
-    name: 'Code Reviewer',
+    name: 'Sales Specialist',
     status: 'active',
-    type: 'Code Analysis',
+    type: 'Sales Agent',
     lastUpdated: '30 minutes ago',
-    description: 'Specialized agent for code review and quality assurance',
-    capabilities: ['Code Review', 'Bug Detection', 'Style Analysis', 'Security Scan'],
+    description: 'Engages prospects, qualifies leads, and closes sales through persuasive voice conversations',
+    capabilities: ['Lead Qualification', 'Product Demos', 'Objection Handling', 'Closing Techniques'],
+    phoneNumbers: ['+1-555-987-6543'],
+    voiceModel: 'Male Confident',
+    language: 'English (US)',
     metrics: {
-      requestsToday: 450,
-      averageResponseTime: 1200,
-      successRate: 99.2,
+      callsToday: 78,
+      averageCallDuration: 8.7,
+      successRate: 87.3,
     },
     createdAt: '2024-01-05T14:30:00Z',
     updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
   },
   {
     id: '3',
-    name: 'Data Processor',
+    name: 'Appointment Scheduler',
     status: 'maintenance',
-    type: 'Data Analysis',
+    type: 'Appointment Scheduler',
     lastUpdated: '1 day ago',
-    description: 'Processes and analyzes large datasets for insights',
-    capabilities: ['Data Mining', 'Statistical Analysis', 'Visualization', 'ML Training'],
+    description: 'Books appointments, manages calendars, and handles scheduling conflicts via phone',
+    capabilities: ['Calendar Management', 'Time Slot Booking', 'Reminder Systems', 'Rescheduling'],
+    phoneNumbers: ['+44-20-7123-4567'],
+    voiceModel: 'Female Friendly',
+    language: 'English (UK)',
     metrics: {
-      requestsToday: 0,
-      averageResponseTime: 2800,
+      callsToday: 0,
+      averageCallDuration: 3.1,
       successRate: 96.8,
     },
-    createdAt: '2024-01-10T09:15:00Z',
+    createdAt: '2024-01-08T09:15:00Z',
     updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: '4',
-    name: 'Image Generator',
+    name: 'Survey Collector',
     status: 'inactive',
-    type: 'Image Creation',
+    type: 'Survey Collector',
     lastUpdated: '3 days ago',
-    description: 'Creates and modifies images based on text prompts',
-    capabilities: ['Image Generation', 'Style Transfer', 'Image Editing', 'Upscaling'],
+    description: 'Conducts phone surveys, collects customer feedback, and gathers market research data',
+    capabilities: ['Survey Administration', 'Data Collection', 'Response Recording', 'Follow-up Calls'],
+    phoneNumbers: [],
+    voiceModel: 'Neutral Professional',
+    language: 'English (US)',
     metrics: {
-      requestsToday: 0,
-      averageResponseTime: 4500,
-      successRate: 94.1,
+      callsToday: 0,
+      averageCallDuration: 5.4,
+      successRate: 89.1,
     },
     createdAt: '2024-01-12T16:45:00Z',
     updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: '5',
-    name: 'Task Scheduler',
+    name: 'Order Processing Agent',
     status: 'active',
-    type: 'Automation',
+    type: 'Order Taker',
     lastUpdated: '1 hour ago',
-    description: 'Manages and schedules automated tasks and workflows',
-    capabilities: ['Task Scheduling', 'Workflow Management', 'Automation', 'Monitoring'],
+    description: 'Takes phone orders, processes payments, and handles order modifications and tracking',
+    capabilities: ['Order Taking', 'Payment Processing', 'Inventory Checks', 'Order Tracking'],
+    phoneNumbers: ['+1-555-123-4567'],
+    voiceModel: 'Female Efficient',
+    language: 'English (US)',
     metrics: {
-      requestsToday: 820,
-      averageResponseTime: 150,
-      successRate: 99.7,
+      callsToday: 203,
+      averageCallDuration: 6.8,
+      successRate: 98.2,
     },
     createdAt: '2024-01-15T11:20:00Z',
     updatedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
@@ -173,10 +188,13 @@ export const agentsService = {
       status: 'inactive',
       lastUpdated: 'Just now',
       metrics: {
-        requestsToday: 0,
-        averageResponseTime: 0,
+        callsToday: 0,
+        averageCallDuration: 0,
         successRate: 0,
       },
+      phoneNumbers: [],
+      voiceModel: agentData.voiceModel || 'Female Professional',
+      language: agentData.language || 'English (US)',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -242,8 +260,8 @@ export const agentsService = {
     active: number;
     inactive: number;
     maintenance: number;
-    totalRequestsToday: number;
-    averageResponseTime: number;
+    totalCallsToday: number;
+    averageCallDuration: number;
     overallSuccessRate: number;
   }> {
     await mockDelay();
@@ -256,8 +274,8 @@ export const agentsService = {
     const inactive = MOCK_AGENTS.filter(a => a.status === 'inactive').length;
     const maintenance = MOCK_AGENTS.filter(a => a.status === 'maintenance').length;
 
-    const totalRequestsToday = MOCK_AGENTS.reduce((sum, agent) => sum + agent.metrics.requestsToday, 0);
-    const averageResponseTime = MOCK_AGENTS.reduce((sum, agent) => sum + agent.metrics.averageResponseTime, 0) / total;
+    const totalCallsToday = MOCK_AGENTS.reduce((sum, agent) => sum + agent.metrics.callsToday, 0);
+    const averageCallDuration = MOCK_AGENTS.reduce((sum, agent) => sum + agent.metrics.averageCallDuration, 0) / total;
     const overallSuccessRate = MOCK_AGENTS.reduce((sum, agent) => sum + agent.metrics.successRate, 0) / total;
 
     return {
@@ -265,8 +283,8 @@ export const agentsService = {
       active,
       inactive,
       maintenance,
-      totalRequestsToday,
-      averageResponseTime: Math.round(averageResponseTime),
+      totalCallsToday,
+      averageCallDuration: Math.round(averageCallDuration * 10) / 10,
       overallSuccessRate: Math.round(overallSuccessRate * 100) / 100,
     };
   },

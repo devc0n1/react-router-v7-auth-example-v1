@@ -4,6 +4,7 @@ import { ProtectedLayout } from './components/ProtectedLayout';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Agents } from './pages/Agents';
+import { PhoneNumbers } from './pages/PhoneNumbers';
 
 function App() {
   return (
@@ -24,6 +25,14 @@ function App() {
             element={
               <ProtectedLayout>
                 <Agents />
+              </ProtectedLayout>
+            }
+          />
+          <Route
+            path="/phone-numbers"
+            element={
+              <ProtectedLayout>
+                <PhoneNumbers />
               </ProtectedLayout>
             }
           />

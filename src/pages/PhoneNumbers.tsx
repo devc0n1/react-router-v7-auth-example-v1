@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
 import { useAsync, useAsyncCallback } from '../hooks/useApi';
-import { agentsService } from '../services/agentsService';
-import type { Agent, CreateAgentRequest } from '../types/api';
+import { phoneNumbersService } from '../services/phoneNumbersService';
+import type { PhoneNumber, CreatePhoneNumberRequest } from '../types/api';
 
-// Modal component for creating/editing agents
-const AgentModal: React.FC<{
+// Modal component for creating/editing phone numbers
+const PhoneNumberModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (agent: CreateAgentRequest) => Promise<void>;
-  agent?: Agent | null;
+  onSubmit: (phoneNumber: CreatePhoneNumberRequest) => Promise<void>;
+  phoneNumber?: PhoneNumber | null;
   loading: boolean;
-}> = ({ isOpen, onClose, onSubmit, agent, loading }) => {
-  const [formData, setFormData] = useState<CreateAgentRequest>({
-    name: agent?.name || '',
-    type: agent?.type || '',
-    description: agent?.description || '',
-    capabilities: agent?.capabilities || [],
+}> = ({ isOpen, onClose, onSubmit, phoneNumber, loading }) => {
+  const [formData, setFormData] = useState<CreatePhoneNumberRequest>({
+    number: phoneNumber?.number || '',
+    countryCode: phoneNumber?.countryCode || 'US',
+    type: phoneNumber?.type || 'local',
+    provider: phoneNumber?.provider || 'Twilio',
+    cost: phoneNumber?.cost || 1.50,
+    capabilities: phoneNumber?.capabilities || [],
   });
   const [capabilityInput, setCapabilityInput] = useState('');
 
@@ -67,18 +69,19 @@ const AgentModal: React.FC<{
         overflowY: 'auto',
       }}>
         <h2 style={{ marginTop: 0, marginBottom: '1.5rem' }}>
-          {agent ? 'Edit Voice Agent' : 'Create New Voice Agent'}
+          {phoneNumber ? 'Edit Phone Number' : 'Add New Phone Number'}
         </h2>
         
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-              Name
+              Phone Number
             </label>
             <input
               type="text"
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              value={formData.number}
+              onChange={(e) => setFormData(prev => ({ ...prev, number: e.target.value }))}
+              placeholder="+1-555-123-4567"
               style={{
                 width: '100%',
                 padding: '0.5rem',
@@ -92,11 +95,11 @@ const AgentModal: React.FC<{
 
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-              Type
+              Country Code
             </label>
             <select
-              value={formData.type}
-              onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+              value={formData.countryCode}
+              onChange={(e) => setFormData(prev => ({ ...prev, countryCode: e.target.value }))}
               style={{
                 width: '100%',
                 padding: '0.5rem',
@@ -106,31 +109,76 @@ const AgentModal: React.FC<{
               }}
               required
             >
-              <option value="">Select a type</option>
-              <option value="Customer Support">Customer Support</option>
-              <option value="Sales Agent">Sales Agent</option>
-              <option value="Appointment Scheduler">Appointment Scheduler</option>
-              <option value="Survey Collector">Survey Collector</option>
-              <option value="Order Taker">Order Taker</option>
-              <option value="Lead Qualifier">Lead Qualifier</option>
+              <option value="US">United States (+1)</option>
+              <option value="GB">United Kingdom (+44)</option>
+              <option value="CA">Canada (+1)</option>
+              <option value="AU">Australia (+61)</option>
+              <option value="DE">Germany (+49)</option>
+              <option value="FR">France (+33)</option>
             </select>
           </div>
 
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-              Description
+              Type
             </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as 'local' | 'toll-free' | 'mobile' }))}
               style={{
                 width: '100%',
                 padding: '0.5rem',
                 border: '1px solid #ddd',
                 borderRadius: '4px',
-                minHeight: '80px',
                 boxSizing: 'border-box',
-                resize: 'vertical',
+              }}
+              required
+            >
+              <option value="local">Local</option>
+              <option value="toll-free">Toll-Free</option>
+              <option value="mobile">Mobile</option>
+            </select>
+          </div>
+
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+              Provider
+            </label>
+            <select
+              value={formData.provider}
+              onChange={(e) => setFormData(prev => ({ ...prev, provider: e.target.value }))}
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                boxSizing: 'border-box',
+              }}
+              required
+            >
+              <option value="Twilio">Twilio</option>
+              <option value="Vonage">Vonage</option>
+              <option value="Bandwidth">Bandwidth</option>
+              <option value="Plivo">Plivo</option>
+            </select>
+          </div>
+
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+              Monthly Cost ($)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.cost}
+              onChange={(e) => setFormData(prev => ({ ...prev, cost: parseFloat(e.target.value) }))}
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                boxSizing: 'border-box',
               }}
               required
             />
@@ -146,7 +194,7 @@ const AgentModal: React.FC<{
                 value={capabilityInput}
                 onChange={(e) => setCapabilityInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCapability())}
-                placeholder="Add capability"
+                placeholder="Voice Calls, SMS, MMS"
                 style={{
                   flex: 1,
                   padding: '0.5rem',
@@ -244,7 +292,7 @@ const AgentModal: React.FC<{
                   animation: 'spin 1s linear infinite',
                 }}></div>
               )}
-              {loading ? 'Saving...' : agent ? 'Update' : 'Create'}
+              {loading ? 'Saving...' : phoneNumber ? 'Update' : 'Add'}
             </button>
           </div>
         </form>
@@ -253,97 +301,110 @@ const AgentModal: React.FC<{
   );
 };
 
-export const Agents: React.FC = () => {
+export const PhoneNumbers: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
-  const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
+  const [editingPhoneNumber, setEditingPhoneNumber] = useState<PhoneNumber | null>(null);
 
-  // Fetch agents data
-  const { data: agentsResponse, loading, error, refetch } = useAsync(
-    () => agentsService.getAgents(1, 20),
+  // Fetch phone numbers data
+  const { data: phoneNumbersResponse, loading, error, refetch } = useAsync(
+    () => phoneNumbersService.getPhoneNumbers(1, 20),
     []
   );
 
-  // Create agent callback
-  const [createAgent, { loading: createLoading }] = useAsyncCallback(
-    async (agentData: CreateAgentRequest) => {
-      await agentsService.createAgent(agentData);
+  // Create phone number callback
+  const [createPhoneNumber, { loading: createLoading }] = useAsyncCallback(
+    async (phoneNumberData: CreatePhoneNumberRequest) => {
+      await phoneNumbersService.createPhoneNumber(phoneNumberData);
       await refetch();
     }
   );
 
-  // Update agent callback
-  const [updateAgent, { loading: updateLoading }] = useAsyncCallback(
+  // Update phone number callback
+  const [updatePhoneNumber, { loading: updateLoading }] = useAsyncCallback(
     async (id: string, updates: any) => {
-      await agentsService.updateAgent(id, updates);
+      await phoneNumbersService.updatePhoneNumber(id, updates);
       await refetch();
     }
   );
 
-  // Delete agent callback
-  const [deleteAgent, { loading: deleteLoading }] = useAsyncCallback(
+  // Delete phone number callback
+  const [deletePhoneNumber, { loading: deleteLoading }] = useAsyncCallback(
     async (id: string) => {
-      if (window.confirm('Are you sure you want to delete this agent?')) {
-        await agentsService.deleteAgent(id);
+      if (window.confirm('Are you sure you want to delete this phone number?')) {
+        await phoneNumbersService.deletePhoneNumber(id);
         await refetch();
       }
     }
   );
 
-  // Toggle agent status callback
+  // Toggle phone number status callback
   const [toggleStatus, { loading: toggleLoading }] = useAsyncCallback(
     async (id: string) => {
-      await agentsService.toggleAgentStatus(id);
+      await phoneNumbersService.togglePhoneNumberStatus(id);
       await refetch();
     }
   );
 
-  const agents = agentsResponse?.data || [];
+  const phoneNumbers = phoneNumbersResponse?.data || [];
 
-  const getStatusColor = (status: Agent['status']) => {
+  const getStatusColor = (status: PhoneNumber['status']) => {
     switch (status) {
       case 'active':
         return '#28a745';
       case 'inactive':
         return '#6c757d';
-      case 'maintenance':
+      case 'pending':
         return '#ffc107';
       default:
         return '#6c757d';
     }
   };
 
-  const getStatusIcon = (status: Agent['status']) => {
+  const getStatusIcon = (status: PhoneNumber['status']) => {
     switch (status) {
       case 'active':
         return '✅';
       case 'inactive':
         return '❌';
-      case 'maintenance':
-        return '🔧';
+      case 'pending':
+        return '⏳';
       default:
         return '❓';
     }
   };
 
-  const handleCreateAgent = async (agentData: CreateAgentRequest) => {
-    await createAgent(agentData);
+  const getTypeIcon = (type: PhoneNumber['type']) => {
+    switch (type) {
+      case 'local':
+        return '🏠';
+      case 'toll-free':
+        return '🆓';
+      case 'mobile':
+        return '📱';
+      default:
+        return '📞';
+    }
   };
 
-  const handleEditAgent = (agent: Agent) => {
-    setEditingAgent(agent);
+  const handleCreatePhoneNumber = async (phoneNumberData: CreatePhoneNumberRequest) => {
+    await createPhoneNumber(phoneNumberData);
+  };
+
+  const handleEditPhoneNumber = (phoneNumber: PhoneNumber) => {
+    setEditingPhoneNumber(phoneNumber);
     setShowModal(true);
   };
 
-  const handleUpdateAgent = async (agentData: CreateAgentRequest) => {
-    if (editingAgent) {
-      await updateAgent(editingAgent.id, agentData);
-      setEditingAgent(null);
+  const handleUpdatePhoneNumber = async (phoneNumberData: CreatePhoneNumberRequest) => {
+    if (editingPhoneNumber) {
+      await updatePhoneNumber(editingPhoneNumber.id, phoneNumberData);
+      setEditingPhoneNumber(null);
     }
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingAgent(null);
+    setEditingPhoneNumber(null);
   };
 
   // Loading spinner component
@@ -381,7 +442,7 @@ export const Agents: React.FC = () => {
             fontSize: '2.5rem',
             fontWeight: 'bold'
           }}>
-            Voice Agents
+            Phone Numbers
           </h1>
           <LoadingSpinner />
         </div>
@@ -398,7 +459,7 @@ export const Agents: React.FC = () => {
           fontSize: '2.5rem',
           fontWeight: 'bold'
         }}>
-          Voice Agents
+          Phone Numbers
         </h1>
         <div style={{
           backgroundColor: '#f8d7da',
@@ -408,7 +469,7 @@ export const Agents: React.FC = () => {
           border: '1px solid #f5c6cb',
           textAlign: 'center',
         }}>
-          Error loading agents: {error}
+          Error loading phone numbers: {error}
           <br />
           <button
             onClick={refetch}
@@ -450,7 +511,7 @@ export const Agents: React.FC = () => {
             fontSize: '2.5rem',
             fontWeight: 'bold'
           }}>
-            Voice Agents
+            Phone Numbers
           </h1>
           <button
             onClick={() => setShowModal(true)}
@@ -467,13 +528,13 @@ export const Agents: React.FC = () => {
             onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#0056b3'}
             onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#007bff'}
           >
-            Add New Voice Agent
+            Add New Number
           </button>
         </div>
 
         <div style={{ marginBottom: '2rem' }}>
           <p style={{ color: '#666', fontSize: '1.1rem', margin: 0 }}>
-            Monitor and manage your voice agents with full CRUD operations. Each agent handles voice calls and conversations.
+            Manage your phone numbers and assign them to voice agents. Monitor costs and capabilities for each number.
           </p>
           <div style={{ 
             marginTop: '1rem', 
@@ -482,21 +543,21 @@ export const Agents: React.FC = () => {
             borderRadius: '4px',
             fontSize: '0.9rem'
           }}>
-            💡 <strong>Voice Integration:</strong> All operations (Create, Read, Update, Delete) are handled through HTTP API calls with proper loading states and error handling.
+            📞 <strong>Voice Integration:</strong> All phone numbers can be assigned to voice agents for call handling and automated conversations.
           </div>
         </div>
 
-        {/* Agents Grid */}
+        {/* Phone Numbers Grid */}
         <div style={{ 
           display: 'grid', 
           gap: '1.5rem', 
           gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))' 
         }}>
-          {agents.map((agent) => {
+          {phoneNumbers.map((phoneNumber) => {
             const isActionLoading = toggleLoading || deleteLoading;
             return (
               <div
-                key={agent.id}
+                key={phoneNumber.id}
                 style={{
                   backgroundColor: 'white',
                   padding: '1.5rem',
@@ -525,38 +586,111 @@ export const Agents: React.FC = () => {
                   alignItems: 'flex-start',
                   marginBottom: '1rem'
                 }}>
-                  <h3 style={{ 
-                    margin: 0, 
-                    color: '#333',
-                    fontSize: '1.3rem',
-                    fontWeight: 'bold'
-                  }}>
-                    {agent.name}
-                  </h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '1.2rem' }}>{getTypeIcon(phoneNumber.type)}</span>
+                    <h3 style={{ 
+                      margin: 0, 
+                      color: '#333',
+                      fontSize: '1.3rem',
+                      fontWeight: 'bold'
+                    }}>
+                      {phoneNumber.number}
+                    </h3>
+                  </div>
                   <div style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: '0.5rem',
-                    backgroundColor: getStatusColor(agent.status),
+                    backgroundColor: getStatusColor(phoneNumber.status),
                     color: 'white',
                     padding: '0.25rem 0.75rem',
                     borderRadius: '20px',
                     fontSize: '0.8rem',
                     fontWeight: 'bold'
                   }}>
-                    <span>{getStatusIcon(agent.status)}</span>
-                    {agent.status.charAt(0).toUpperCase() + agent.status.slice(1)}
+                    <span>{getStatusIcon(phoneNumber.status)}</span>
+                    {phoneNumber.status.charAt(0).toUpperCase() + phoneNumber.status.slice(1)}
                   </div>
                 </div>
 
-                <div style={{ marginBottom: '1rem' }}>
-                  <p style={{ 
-                    color: '#666', 
-                    margin: '0 0 0.5rem 0',
-                    lineHeight: '1.5'
-                  }}>
-                    {agent.description}
-                  </p>
+                {/* Phone Number Details */}
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: '1fr 1fr', 
+                  gap: '1rem',
+                  marginBottom: '1rem',
+                  padding: '0.75rem',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '4px'
+                }}>
+                  <div>
+                    <label style={{ 
+                      color: '#888', 
+                      fontSize: '0.8rem', 
+                      fontWeight: 'bold' 
+                    }}>
+                      Type
+                    </label>
+                    <p style={{ 
+                      margin: '0.25rem 0 0 0', 
+                      color: '#333',
+                      fontWeight: '500',
+                      fontSize: '0.9rem'
+                    }}>
+                      {phoneNumber.type.charAt(0).toUpperCase() + phoneNumber.type.slice(1)}
+                    </p>
+                  </div>
+                  <div>
+                    <label style={{ 
+                      color: '#888', 
+                      fontSize: '0.8rem', 
+                      fontWeight: 'bold' 
+                    }}>
+                      Country
+                    </label>
+                    <p style={{ 
+                      margin: '0.25rem 0 0 0', 
+                      color: '#333',
+                      fontWeight: '500',
+                      fontSize: '0.9rem'
+                    }}>
+                      {phoneNumber.countryCode}
+                    </p>
+                  </div>
+                  <div>
+                    <label style={{ 
+                      color: '#888', 
+                      fontSize: '0.8rem', 
+                      fontWeight: 'bold' 
+                    }}>
+                      Provider
+                    </label>
+                    <p style={{ 
+                      margin: '0.25rem 0 0 0', 
+                      color: '#333',
+                      fontWeight: '500',
+                      fontSize: '0.9rem'
+                    }}>
+                      {phoneNumber.provider}
+                    </p>
+                  </div>
+                  <div>
+                    <label style={{ 
+                      color: '#888', 
+                      fontSize: '0.8rem', 
+                      fontWeight: 'bold' 
+                    }}>
+                      Monthly Cost
+                    </label>
+                    <p style={{ 
+                      margin: '0.25rem 0 0 0', 
+                      color: '#333',
+                      fontWeight: '500',
+                      fontSize: '0.9rem'
+                    }}>
+                      ${phoneNumber.cost.toFixed(2)}
+                    </p>
+                  </div>
                 </div>
 
                 {/* Capabilities */}
@@ -571,7 +705,7 @@ export const Agents: React.FC = () => {
                     Capabilities
                   </label>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-                    {agent.capabilities.map((capability) => (
+                    {phoneNumber.capabilities.map((capability) => (
                       <span
                         key={capability}
                         style={{
@@ -588,165 +722,27 @@ export const Agents: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Metrics */}
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: '1fr 1fr', 
-                  gap: '1rem',
-                  marginBottom: '1.5rem',
-                  padding: '0.75rem',
-                  backgroundColor: '#f8f9fa',
-                  borderRadius: '4px'
-                }}>
-                  <div>
-                    <label style={{ 
-                      color: '#888', 
-                      fontSize: '0.8rem', 
-                      fontWeight: 'bold' 
-                    }}>
-                      Calls Today
-                    </label>
-                    <p style={{ 
-                      margin: '0.25rem 0 0 0', 
-                      color: '#333',
-                      fontWeight: '500',
-                      fontSize: '0.9rem'
-                    }}>
-                      {agent.metrics.callsToday.toLocaleString()}
-                    </p>
-                  </div>
-                  <div>
-                    <label style={{ 
-                      color: '#888', 
-                      fontSize: '0.8rem', 
-                      fontWeight: 'bold' 
-                    }}>
-                      Success Rate
-                    </label>
-                    <p style={{ 
-                      margin: '0.25rem 0 0 0', 
-                      color: '#333',
-                      fontWeight: '500',
-                      fontSize: '0.9rem'
-                    }}>
-                      {agent.metrics.successRate}%
-                    </p>
-                  </div>
-                  <div>
-                    <label style={{ 
-                      color: '#888', 
-                      fontSize: '0.8rem', 
-                      fontWeight: 'bold' 
-                    }}>
-                      Type
-                    </label>
-                    <p style={{ 
-                      margin: '0.25rem 0 0 0', 
-                      color: '#333',
-                      fontWeight: '500',
-                      fontSize: '0.9rem'
-                    }}>
-                      {agent.type}
-                    </p>
-                  </div>
-                  <div>
-                    <label style={{ 
-                      color: '#888', 
-                      fontSize: '0.8rem', 
-                      fontWeight: 'bold' 
-                    }}>
-                      Last Updated
-                    </label>
-                    <p style={{ 
-                      margin: '0.25rem 0 0 0', 
-                      color: '#333',
-                      fontWeight: '500',
-                      fontSize: '0.9rem'
-                    }}>
-                      {agent.lastUpdated}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Voice Configuration */}
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: '1fr 1fr', 
-                  gap: '1rem',
-                  marginBottom: '1rem',
-                  padding: '0.75rem',
-                  backgroundColor: '#fff3cd',
-                  borderRadius: '4px',
-                  border: '1px solid #ffeaa7'
-                }}>
-                  <div>
-                    <label style={{ 
-                      color: '#888', 
-                      fontSize: '0.8rem', 
-                      fontWeight: 'bold' 
-                    }}>
-                      Voice Model
-                    </label>
-                    <p style={{ 
-                      margin: '0.25rem 0 0 0', 
-                      color: '#333',
-                      fontWeight: '500',
-                      fontSize: '0.9rem'
-                    }}>
-                      {agent.voiceModel}
-                    </p>
-                  </div>
-                  <div>
-                    <label style={{ 
-                      color: '#888', 
-                      fontSize: '0.8rem', 
-                      fontWeight: 'bold' 
-                    }}>
-                      Language
-                    </label>
-                    <p style={{ 
-                      margin: '0.25rem 0 0 0', 
-                      color: '#333',
-                      fontWeight: '500',
-                      fontSize: '0.9rem'
-                    }}>
-                      {agent.language}
-                    </p>
-                  </div>
-                  <div>
-                    <label style={{ 
-                      color: '#888', 
-                      fontSize: '0.8rem', 
-                      fontWeight: 'bold' 
-                    }}>
-                      Phone Numbers
-                    </label>
-                    <p style={{ 
-                      margin: '0.25rem 0 0 0', 
-                      color: '#333',
-                      fontWeight: '500',
-                      fontSize: '0.9rem'
-                    }}>
-                      {agent.phoneNumbers.length > 0 ? `${agent.phoneNumbers.length} assigned` : 'None assigned'}
-                    </p>
-                  </div>
-                  <div>
-                    <label style={{ 
-                      color: '#888', 
-                      fontSize: '0.8rem', 
-                      fontWeight: 'bold' 
-                    }}>
-                      Avg Call Duration
-                    </label>
-                    <p style={{ 
-                      margin: '0.25rem 0 0 0', 
-                      color: '#333',
-                      fontWeight: '500',
-                      fontSize: '0.9rem'
-                    }}>
-                      {agent.metrics.averageCallDuration.toFixed(1)} min
-                    </p>
-                  </div>
+                {/* Assigned Agents */}
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ 
+                    color: '#888', 
+                    fontSize: '0.9rem', 
+                    fontWeight: 'bold',
+                    display: 'block',
+                    marginBottom: '0.5rem'
+                  }}>
+                    Assigned Agents
+                  </label>
+                  <p style={{ 
+                    margin: 0, 
+                    color: '#333',
+                    fontSize: '0.9rem'
+                  }}>
+                    {phoneNumber.assignedAgents.length > 0 
+                      ? `${phoneNumber.assignedAgents.length} agent(s) assigned`
+                      : 'No agents assigned'
+                    }
+                  </p>
                 </div>
 
                 <div style={{ 
@@ -756,7 +752,7 @@ export const Agents: React.FC = () => {
                   flexWrap: 'wrap'
                 }}>
                   <button
-                    onClick={() => handleEditAgent(agent)}
+                    onClick={() => handleEditPhoneNumber(phoneNumber)}
                     disabled={isActionLoading}
                     style={{
                       backgroundColor: 'transparent',
@@ -785,10 +781,10 @@ export const Agents: React.FC = () => {
                     Edit
                   </button>
                   <button
-                    onClick={() => toggleStatus(agent.id)}
+                    onClick={() => toggleStatus(phoneNumber.id)}
                     disabled={isActionLoading}
                     style={{
-                      backgroundColor: agent.status === 'active' ? '#dc3545' : '#28a745',
+                      backgroundColor: phoneNumber.status === 'active' ? '#dc3545' : '#28a745',
                       color: 'white',
                       border: 'none',
                       padding: '0.5rem 1rem',
@@ -809,10 +805,10 @@ export const Agents: React.FC = () => {
                       }
                     }}
                   >
-                    {agent.status === 'active' ? 'Stop' : 'Start'}
+                    {phoneNumber.status === 'active' ? 'Deactivate' : 'Activate'}
                   </button>
                   <button
-                    onClick={() => deleteAgent(agent.id)}
+                    onClick={() => deletePhoneNumber(phoneNumber.id)}
                     disabled={isActionLoading}
                     style={{
                       backgroundColor: '#dc3545',
@@ -858,7 +854,7 @@ export const Agents: React.FC = () => {
             margin: '0 0 1rem 0',
             fontSize: '1.25rem'
           }}>
-            Agent Summary
+            Phone Number Summary
           </h3>
           <div style={{ 
             display: 'grid', 
@@ -867,37 +863,37 @@ export const Agents: React.FC = () => {
           }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#007bff' }}>
-                {agents.length}
+                {phoneNumbers.length}
               </div>
-              <div style={{ color: '#666', fontSize: '0.9rem' }}>Total Agents</div>
+              <div style={{ color: '#666', fontSize: '0.9rem' }}>Total Numbers</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#28a745' }}>
-                {agents.filter(a => a.status === 'active').length}
+                {phoneNumbers.filter(p => p.status === 'active').length}
               </div>
               <div style={{ color: '#666', fontSize: '0.9rem' }}>Active</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#6c757d' }}>
-                {agents.filter(a => a.status === 'inactive').length}
+                {phoneNumbers.filter(p => p.status === 'inactive').length}
               </div>
               <div style={{ color: '#666', fontSize: '0.9rem' }}>Inactive</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#ffc107' }}>
-                {agents.filter(a => a.status === 'maintenance').length}
+                ${phoneNumbers.reduce((sum, p) => sum + p.cost, 0).toFixed(2)}
               </div>
-              <div style={{ color: '#666', fontSize: '0.9rem' }}>Maintenance</div>
+              <div style={{ color: '#666', fontSize: '0.9rem' }}>Monthly Cost</div>
             </div>
           </div>
         </div>
 
-        {/* Agent Modal */}
-        <AgentModal
+        {/* Phone Number Modal */}
+        <PhoneNumberModal
           isOpen={showModal}
           onClose={handleCloseModal}
-          onSubmit={editingAgent ? handleUpdateAgent : handleCreateAgent}
-          agent={editingAgent}
+          onSubmit={editingPhoneNumber ? handleUpdatePhoneNumber : handleCreatePhoneNumber}
+          phoneNumber={editingPhoneNumber}
           loading={createLoading || updateLoading}
         />
       </div>

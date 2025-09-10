@@ -20,9 +20,9 @@ const MOCK_ACTIVITIES: RecentActivity[] = [
   {
     id: '2',
     type: 'agent_created',
-    message: 'Created new agent: Task Scheduler',
+    message: 'Created new agent: Order Processing Agent',
     timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    icon: '🏠',
+    icon: '🎤',
   },
   {
     id: '3',
@@ -34,7 +34,7 @@ const MOCK_ACTIVITIES: RecentActivity[] = [
   {
     id: '4',
     type: 'agent_updated',
-    message: 'Updated GPT Assistant configuration',
+    message: 'Updated Customer Support Agent configuration',
     timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
     icon: '⚙️',
   },
@@ -72,8 +72,8 @@ export const dashboardService = {
     const stats: DashboardStats = {
       totalAgents: 5,
       activeAgents: 3,
-      totalRequests: 2520,
-      averageResponseTime: 890,
+      totalCalls: 2520,
+      averageCallDuration: 4.8,
       systemUptime: formatUptime(),
       lastUpdated: new Date().toISOString(),
     };

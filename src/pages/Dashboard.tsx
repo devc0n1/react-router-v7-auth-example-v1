@@ -128,20 +128,20 @@ export const Dashboard: React.FC = () => {
             ) : stats ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#666' }}>Total Agents:</span>
+                  <span style={{ color: '#666' }}>Total Voice Agents:</span>
                   <span style={{ fontWeight: 'bold', color: '#007bff' }}>{stats.totalAgents}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#666' }}>Active Agents:</span>
+                  <span style={{ color: '#666' }}>Active Voice Agents:</span>
                   <span style={{ fontWeight: 'bold', color: '#28a745' }}>{stats.activeAgents}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#666' }}>Total Requests:</span>
-                  <span style={{ fontWeight: 'bold', color: '#6f42c1' }}>{stats.totalRequests.toLocaleString()}</span>
+                  <span style={{ color: '#666' }}>Total Calls:</span>
+                  <span style={{ fontWeight: 'bold', color: '#6f42c1' }}>{stats.totalCalls.toLocaleString()}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#666' }}>Avg Response Time:</span>
-                  <span style={{ fontWeight: 'bold', color: '#fd7e14' }}>{stats.averageResponseTime}ms</span>
+                  <span style={{ color: '#666' }}>Avg Call Duration:</span>
+                  <span style={{ fontWeight: 'bold', color: '#fd7e14' }}>{stats.averageCallDuration} min</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#666' }}>System Uptime:</span>
@@ -228,11 +228,11 @@ export const Dashboard: React.FC = () => {
                   <span style={{ fontWeight: 'bold', color: '#007bff' }}>{userActivity.loginCount}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#666' }}>Agents Created:</span>
+                  <span style={{ color: '#666' }}>Voice Agents Created:</span>
                   <span style={{ fontWeight: 'bold', color: '#28a745' }}>{userActivity.agentsCreated}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#666' }}>Agents Modified:</span>
+                  <span style={{ color: '#666' }}>Voice Agents Modified:</span>
                   <span style={{ fontWeight: 'bold', color: '#ffc107' }}>{userActivity.agentsModified}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -269,7 +269,8 @@ export const Dashboard: React.FC = () => {
               lineHeight: '1.8'
             }}>
               <li><strong>Dashboard:</strong> Current page with overview and real-time stats</li>
-              <li><strong>Agents:</strong> Manage AI agents with full CRUD operations</li>
+              <li><strong>Voice Agents:</strong> Manage voice agents with full CRUD operations</li>
+              <li><strong>Phone Numbers:</strong> Manage phone numbers and assign them to agents</li>
               <li><strong>Logout:</strong> End your session securely</li>
             </ul>
             <div style={{ 
