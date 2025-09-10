@@ -1,15 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-
-interface User {
-  username: string;
-}
+import { authService } from '../services/authService';
+import { storage } from '../utils/storage';
+import type { User } from '../types/api';
 
 interface AuthContextType {
   user: User | null;
   login: (username: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
+  loading: boolean;
+  refreshAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,34 +29,89 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Load user from localStorage on mount
+  // Initialize authentication state on mount
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
+    const initializeAuth = async () => {
       try {
-        setUser(JSON.parse(savedUser));
+        const token = storage.getToken();
+        if (token) {
+          // Validate token and get user data
+          const userData = await authService.getCurrentUser();
+          setUser(userData);
+        }
       } catch (error) {
-        console.error('Error parsing saved user:', error);
-        localStorage.removeItem('user');
+        console.error('Error initializing auth:', error);
+        // Clear invalid auth data
+        storage.clearAuth();
+      } finally {
+        setLoading(false);
       }
-    }
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (username: string, password: string): Promise<boolean> => {
-    // Mock authentication logic - accept any username with password "password"
-    if (password === 'password') {
-      const userData = { username };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+    try {
+      setLoading(true);
+      const response = await authService.login({ username, password });
+      
+      // Store auth data
+      storage.setToken(response.token);
+      storage.setRefreshToken(response.refreshToken);
+      storage.setUser(response.user);
+      
+      // Update user state
+      setUser(response.user);
+      
       return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    } finally {
+      setLoading(false);
     }
-    return false;
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
+  const logout = async (): Promise<void> => {
+    try {
+      setLoading(true);
+      await authService.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Always clear local state regardless of API call result
+      setUser(null);
+      storage.clearAuth();
+      setLoading(false);
+    }
+  };
+
+  const refreshAuth = async (): Promise<void> => {
+    try {
+      const refreshToken = storage.getRefreshToken();
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
+      }
+
+      const response = await authService.refreshToken({ refreshToken });
+      
+      // Update stored auth data
+      storage.setToken(response.token);
+      storage.setRefreshToken(response.refreshToken);
+      storage.setUser(response.user);
+      
+      // Update user state
+      setUser(response.user);
+    } catch (error) {
+      console.error('Token refresh error:', error);
+      // Clear auth data on refresh failure
+      setUser(null);
+      storage.clearAuth();
+      throw error;
+    }
   };
 
   const value: AuthContextType = {
@@ -63,6 +119,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     isAuthenticated: !!user,
+    loading,
+    refreshAuth,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
